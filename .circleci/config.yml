@@ -29,3 +29,10 @@ workflows:
     # Inside the workflow, you define the jobs you want to run.
     jobs:
       - say-hello
+      - lint-code:
+      - run_tests:
+          requires:
+            - lint-code
+      - build:
+          requires:
+            - run_tests
