@@ -1,55 +1,97 @@
 version: 2.1
 
-commands:
-  install-dependencies:
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - npm-deps-{{ checksum "package.json" }}
-      - run:
-          name: Install dependencies
-          command: HUSKY=0 npm install
-      - save_cache:
-          key: npm-deps-{{ checksum "package.json" }}
-          paths:
-            - node_modules
+orbs:
+  node: circleci/node@5.0.2
 
 jobs:
-  lint-code:
-    docker:
-      - image: cimg/node:20.19
+  lint_code:
+    executor: node/default
+    description: Lint code
     steps:
-      - install-dependencies
+      - checkout
+      - node/install-packages
+      - run:
+          name: Install dependencies
+          command: npm install
       - run:
           name: Lint code
           command: npm run lint
-
+      - persist_to_workspace:
+          root: .
+          paths:
+            - node_modules
+            - package.json
+            - src
+            - .eslintrc.json
+            - .gitignore
+            - .circleci
+            - rollup.config.mjs
+            - commitlint.config.js
+            - tsconfig.json
+            - .husky
   run_tests:
-    docker:
-      - image: cimg/node:20.19
+    executor: node/default
+    description: Run tests
     steps:
-      - install-dependencies
+      - attach_workspace:
+          at: .
       - run:
           name: Run tests
-          command: npm test
-
+          command: npm run test
   build:
-    docker:
-      - image: cimg/node:20.19
+    executor: node/default
+    description: Build
     steps:
-      - install-dependencies
+      - attach_workspace:
+          at: .
       - run:
-          name: Build package
+          name: Build
           command: npm run build
+  run_release:
+    executor: node/default
+    description: Run release
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          name: Set up git credentials
+          command: |
+            git config --global user.email $GIT_EMAIL
+            git config --global user.name $GIT_NAME
+      - run:
+          name: Run release
+          command: |
+            npm run release
+            git push --follow-tags "https://${GH_TOKEN}@github.com/Arseyillion/my-component-library.git" main
+  publish_to_npm:
+    executor: node/default
+    description: Publish to npm
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          name: Check if npm version is the same and publish to npm
+          command: |
+            CURRENT_VERSION=$(npm show ecndevspace-react-component-library version)
+            LOCAL_VERSION=$(node -pe "require('./package.json').version")
 
+            if [ "$CURRENT_VERSION" != "$LOCAL_VERSION" ]; then
+              echo "Versions are different. Publishing to npm."
+              echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+              npm publish
+            else
+              echo "Versions are the same. Skipping npm publish."
+            fi
 workflows:
-  ci:
+  build_app:
     jobs:
-      - lint-code
+      - lint_code
       - run_tests:
           requires:
-            - lint-code
+            - lint_code
       - build:
           requires:
             - run_tests
+      - publish_to_npm:
+          requires:
+            - build

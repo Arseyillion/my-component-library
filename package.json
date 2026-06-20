@@ -1,7 +1,7 @@
 {
-  "name": "imran-codes-react-component-library",
+  "name": "ecndevspace-react-component-library",
   "version": "0.0.17",
-  "description": "This is a react component library from the imran codes youtube channel.",
+  "description": "This is a react component library built by Emmanuel Chukwuemeka Nwuju for EcnDevSpace. It contains a collection of reusable React components that can be used to build user interfaces.",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/index.d.ts",
@@ -37,14 +37,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/imran-codes/react-component-library.git"
+    "url": "https://github.com/Arseyillion/my-component-library.git"
   },
-  "author": "Imran",
+  "author": "Emmanuel Chukwuemeka Nwuju",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/imran-codes/react-component-library/issues"
+    "url": "https://github.com/Arseyillion/my-component-library/issues"
   },
-  "homepage": "https://github.com/imran-codes/react-component-library#readme",
+  "homepage": "https://github.com/Arseyillion/my-component-library#readme",
   "devDependencies": {
     "@babel/preset-env": "^7.23.9",
     "@babel/preset-react": "^7.23.3",
