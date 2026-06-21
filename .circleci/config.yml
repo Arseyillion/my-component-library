@@ -6,82 +6,112 @@ orbs:
 jobs:
   lint_code:
     executor: node/default
-    description: Lint code
     steps:
       - checkout
-      - node/install-packages
+
+      - run:
+          name: Install Bun
+          command: |
+            curl -fsSL https://bun.sh/install | bash
+            echo 'export BUN_INSTALL="$HOME/.bun"' >> $BASH_ENV
+            echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> $BASH_ENV
+            source $BASH_ENV
+
       - run:
           name: Install dependencies
-          command: npm install
+          command: bun install
+
       - run:
           name: Lint code
-          command: npm run lint
+          command: bun run lint
+
       - persist_to_workspace:
           root: .
           paths:
             - node_modules
             - package.json
+            - bun.lock
             - src
-            - .eslintrc.json
-            - .gitignore
-            - .circleci
-            - rollup.config.mjs
-            - commitlint.config.js
-            - tsconfig.json
-            - .husky
+
   run_tests:
     executor: node/default
-    description: Run tests
     steps:
       - attach_workspace:
           at: .
+
       - run:
           name: Run tests
-          command: npm run test
+          command: bun run test
+
   build:
     executor: node/default
-    description: Build
     steps:
       - attach_workspace:
           at: .
+
       - run:
           name: Build
-          command: npm run build
+          command: bun run build
+
   run_release:
     executor: node/default
-    description: Run release
     steps:
       - checkout
-      - node/install-packages
+
+      - run:
+          name: Install Bun
+          command: |
+            curl -fsSL https://bun.sh/install | bash
+            echo 'export BUN_INSTALL="$HOME/.bun"' >> $BASH_ENV
+            echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> $BASH_ENV
+            source $BASH_ENV
+
+      - run:
+          name: Install dependencies
+          command: bun install
+
       - run:
           name: Set up git credentials
           command: |
             git config --global user.email $GIT_EMAIL
             git config --global user.name $GIT_NAME
+
       - run:
           name: Run release
           command: |
-            npm run release
+            bun run release
             git push --follow-tags "https://${GH_TOKEN}@github.com/Arseyillion/my-component-library.git" main
+
   publish_to_npm:
     executor: node/default
-    description: Publish to npm
     steps:
       - checkout
-      - node/install-packages
+
       - run:
-          name: Check if npm version is the same and publish to npm
+          name: Install Bun
+          command: |
+            curl -fsSL https://bun.sh/install | bash
+            echo 'export BUN_INSTALL="$HOME/.bun"' >> $BASH_ENV
+            echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> $BASH_ENV
+            source $BASH_ENV
+
+      - run:
+          name: Install dependencies
+          command: bun install
+
+      - run:
+          name: Publish to npm
           command: |
             CURRENT_VERSION=$(npm show ecndevspace-react-component-library version)
             LOCAL_VERSION=$(node -pe "require('./package.json').version")
 
             if [ "$CURRENT_VERSION" != "$LOCAL_VERSION" ]; then
-              echo "Versions are different. Publishing to npm."
               echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
               npm publish
             else
               echo "Versions are the same. Skipping npm publish."
             fi
+
 workflows:
   build_app:
     jobs:
