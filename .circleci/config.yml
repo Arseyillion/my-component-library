@@ -3,12 +3,10 @@ version: 2.1
 orbs:
   node: circleci/node@5.0.2
 
-jobs:
-  lint_code:
-    executor: node/default
+commands:
+  install_bun:
+    description: "Install the Bun runtime and add it to PATH"
     steps:
-      - checkout
-
       - run:
           name: Install Bun
           command: |
@@ -16,6 +14,14 @@ jobs:
             echo 'export BUN_INSTALL="$HOME/.bun"' >> $BASH_ENV
             echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> $BASH_ENV
             source $BASH_ENV
+
+jobs:
+  lint_code:
+    executor: node/default
+    steps:
+      - checkout
+
+      - install_bun
 
       - run:
           name: Install dependencies
@@ -39,6 +45,8 @@ jobs:
       - attach_workspace:
           at: .
 
+      - install_bun
+
       - run:
           name: Run tests
           command: bun run test
@@ -49,6 +57,8 @@ jobs:
       - attach_workspace:
           at: .
 
+      - install_bun
+
       - run:
           name: Build
           command: bun run build
@@ -58,13 +68,7 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: Install Bun
-          command: |
-            curl -fsSL https://bun.sh/install | bash
-            echo 'export BUN_INSTALL="$HOME/.bun"' >> $BASH_ENV
-            echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> $BASH_ENV
-            source $BASH_ENV
+      - install_bun
 
       - run:
           name: Install dependencies
@@ -87,13 +91,7 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: Install Bun
-          command: |
-            curl -fsSL https://bun.sh/install | bash
-            echo 'export BUN_INSTALL="$HOME/.bun"' >> $BASH_ENV
-            echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> $BASH_ENV
-            source $BASH_ENV
+      - install_bun
 
       - run:
           name: Install dependencies
