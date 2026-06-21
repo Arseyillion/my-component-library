@@ -42,6 +42,8 @@ jobs:
   run_tests:
     executor: node/default
     steps:
+      - checkout
+
       - attach_workspace:
           at: .
 
@@ -54,6 +56,8 @@ jobs:
   build:
     executor: node/default
     steps:
+      - checkout
+
       - attach_workspace:
           at: .
 
